@@ -22,8 +22,8 @@ extra-source-files:  README.md
 library
   hs-source-dirs:      src
   exposed-modules:     Geometry.ConvexHull
-  other-modules:       Geometry.ConvexHull.CConvexHull
-                     --, Geometry.ConvexHull.CConvexHull
+  other-modules:       Geometry.ConvexHull.ConvexHull
+                     , Geometry.ConvexHull.CConvexHull
                      , Geometry.ConvexHull.Types
                      , Geometry.Qhull.Types
                      , Geometry.Qhull.Shared
