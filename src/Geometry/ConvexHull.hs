@@ -10,7 +10,7 @@ See README for examples.
 module Geometry.ConvexHull
   ( module X )
   where
-import           Geometry.ConvexHull.ConvexHull as X
+-- import           Geometry.ConvexHull.ConvexHull as X
 import           Geometry.ConvexHull.Types      as X
 import           Geometry.Qhull.Shared          as X
 import           Geometry.Qhull.Types           as X
