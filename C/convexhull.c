@@ -436,9 +436,9 @@ ConvexHullT* convexHull(
         for(unsigned i = 0; i < dim; i++) {
           faces[i_facet].normal[i] = normal[i];
         }
-        faces[i_facet].offset    = facet->offset;
-        // orientation?
-        faces[i_facet].nvertices = (unsigned)qh_setsize(qh, facet->vertices);
+        faces[i_facet].offset      = facet->offset;
+        faces[i_facet].orientation = facet->toporient ? -1 : 1;
+        faces[i_facet].nvertices   = (unsigned)qh_setsize(qh, facet->vertices);
         { // face vertices 
           faces[i_facet].vertices =
             (VertexT*)malloc(faces[i_facet].nvertices * sizeof(VertexT));
@@ -452,8 +452,6 @@ ConvexHullT* convexHull(
               getpoint(points, dim, faces[i_facet].vertices[i_vertex].id);
             i_vertex++;
           }
-          qsort(faces[i_facet].vertices, faces[i_facet].nvertices,
-                sizeof(VertexT), cmpvertices); // don't do that?
         }
         /*if(dim == 3){ // orientation of the normals 
           pointT* onepoint = ((vertexT*)facet->vertices->e[0].p)->point;
