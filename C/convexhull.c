@@ -407,7 +407,7 @@ ConvexHullT* convexHull(
   qh_zero(qh, errfile);
   exitcode[0] = 
     qh_new_qhull(qh, dim, n, points, ismalloc, opts, outfile, errfile);
-  printf("%s", "exitcode: %u\n", exitcode[0]);
+  printf("exitcode: %u\n", exitcode[0]);
 
   ConvexHullT* out = malloc(sizeof(ConvexHullT));
 

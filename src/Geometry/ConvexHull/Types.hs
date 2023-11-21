@@ -3,7 +3,7 @@ module Geometry.ConvexHull.Types
 import           Data.IntMap.Strict (IntMap)
 import qualified Data.IntMap.Strict as IM
 import           Data.IntSet        (IntSet)
-import           Qhull.Types
+import           Geometry.Qhull.Types
 
 data Vertex = Vertex {
     _point         :: [Double]

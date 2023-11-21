@@ -6,18 +6,18 @@ module Geometry.ConvexHull.CConvexHull
   , c_convexhull 
   )
   where
-import           Control.Monad       ((<$!>), (=<<))
-import           ConvexHull.Types
-import           Data.IntMap.Strict  (IntMap, fromAscList)
-import qualified Data.IntMap.Strict  as IM
-import qualified Data.IntSet         as IS
+import           Control.Monad             ( (<$!>) )
+import           Geometry.ConvexHull.Types
+import           Data.IntMap.Strict        ( IntMap, fromAscList )
+import qualified Data.IntMap.Strict         as IM
+import qualified Data.IntSet                as IS
 import           Data.List
 import qualified Data.HashMap.Strict.InsOrd as H
-import           Data.Tuple.Extra    (both)
+import           Data.Tuple.Extra           ( both )
 import           Foreign
 import           Foreign.C.Types
 import           Foreign.C.String
-import           Qhull.Types
+import           Geometry.Qhull.Types
 
 
 
