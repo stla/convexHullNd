@@ -7,17 +7,29 @@ module Geometry.ConvexHull.CConvexHull
   )
   where
 import           Control.Monad             ( (<$!>) )
-import           Geometry.ConvexHull.Types
+import Geometry.ConvexHull.Types           ( ConvexHull(..)
+                                           , Facet(..)
+                                           , Ridge(..)
+                                           , Vertex(..) )
 import           Data.IntMap.Strict        ( IntMap, fromAscList )
 import qualified Data.IntMap.Strict         as IM
 import qualified Data.IntSet                as IS
-import           Data.List
+import           Data.List                 ( zip4 )
 import qualified Data.HashMap.Strict.InsOrd as H
-import           Data.Tuple.Extra           ( both )
-import           Foreign
-import           Foreign.C.Types
-import           Foreign.C.String
-import           Geometry.Qhull.Types
+import           Data.Tuple.Extra          ( both )
+import           Foreign                   ( Ptr
+                                           , Storable(
+                                               pokeByteOff
+                                             , poke
+                                             , peek
+                                             , alignment
+                                             , sizeOf
+                                             , peekByteOff
+                                             )
+                                           , peekArray )
+import           Foreign.C.Types           ( CInt, CDouble, CUInt(..) )
+import           Foreign.C.String          ( CString )
+import           Geometry.Qhull.Types      ( Family(Family, None), IndexPair(Pair) )
 
 
 

@@ -1,9 +1,10 @@
+{-# LANGUAGE InstanceSigs #-}
 module Geometry.Qhull.Types
   where
-import           Data.Hashable
-import           Data.HashMap.Strict.InsOrd (InsOrdHashMap)
-import           Data.IntMap.Strict         (IntMap)
-import           Data.IntSet                (IntSet)
+import           Data.Hashable              ( Hashable(hashWithSalt) )
+import           Data.HashMap.Strict.InsOrd  (InsOrdHashMap )
+import           Data.IntMap.Strict         ( IntMap )
+import           Data.IntSet                ( IntSet )
 
 type Index = Int
 type IndexMap = IntMap
@@ -12,9 +13,11 @@ type IndexSet = IntSet
 data IndexPair = Pair Index Index
   deriving (Show, Read)
 instance Eq IndexPair where
+    (==) :: IndexPair -> IndexPair -> Bool
     Pair i j == Pair i' j' = (i == i' && j == j') || (i == j' && j == i')
 
 instance Hashable IndexPair where
+  hashWithSalt :: Int -> IndexPair -> Int
   hashWithSalt _ (Pair i j) = (i+j)*(i+j+1) + 2 * min i j
 
 type EdgeMap = InsOrdHashMap IndexPair ([Double],[Double])
