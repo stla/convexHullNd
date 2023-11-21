@@ -2,7 +2,7 @@
 module Geometry.Qhull.Types
   where
 import           Data.Hashable              ( Hashable(hashWithSalt) )
-import           Data.HashMap.Strict.InsOrd  (InsOrdHashMap )
+import           Data.HashMap.Strict.InsOrd ( InsOrdHashMap )
 import           Data.IntMap.Strict         ( IntMap )
 import           Data.IntSet                ( IntSet )
 
