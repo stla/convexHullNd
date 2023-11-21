@@ -1,26 +1,36 @@
 module Geometry.ConvexHull.ConvexHull
   where
 import           Control.Monad                   ( unless, when )
-import           Geometry.ConvexHull.CConvexHull
-import           Geometry.ConvexHull.Types
+import           Geometry.ConvexHull.CConvexHull ( c_convexhull, cConvexHullToConvexHull )
+import           Geometry.ConvexHull.Types       ( Ridge
+                                                 , Facet(_fvertices, _fridges, _fedges)
+                                                 , ConvexHull(_hfacets, _hridges) )
 import           Data.Function                   ( on )
 import           Data.Graph                      ( flattenSCCs, stronglyConnComp )
 import qualified Data.HashMap.Strict.InsOrd      as H
 import           Data.IntMap.Strict              ( IntMap )
 import qualified Data.IntMap.Strict              as IM
 import qualified Data.IntSet                     as IS
-import           Data.List
+import           Data.List                       ( nubBy, findIndices, groupBy, partition )
 import           Data.List.Index                 ( imap )
 import           Data.List.Unique                ( allUnique, count_ )
 import           Data.Tuple.Extra                ( both )
-import           Foreign.C.String
-import           Foreign.C.Types
+import           Foreign.C.String                ( newCString )
+import           Foreign.C.Types                 ( CDouble, CUInt )
 import           Foreign.Marshal.Alloc           ( free, mallocBytes )
 import           Foreign.Marshal.Array           ( pokeArray )
 import           Foreign.Storable                ( peek, sizeOf )
-import           Geometry.Qhull.Shared
-import           Geometry.Qhull.Types
-import           Text.Printf
+import           Geometry.Qhull.Shared           ( verticesIds, sameFamily, nVertices, nEdges, edgesIds )
+import           Geometry.Qhull.Types            ( IndexPair(Pair)
+                                                 , IndexMap
+                                                 , Index
+                                                 , HasVertices(_vertices)
+                                                 , HasNormal(_normal)
+                                                 , HasFamily(_family)
+                                                 , HasEdges(_edges)
+                                                 , Family(None)
+                                                 , EdgeMap )
+import           Text.Printf                     ( printf )
 -- import           Text.Regex
 
 convexHull :: [[Double]]     -- ^ vertices
@@ -33,7 +43,7 @@ convexHull points triangulate stdout file = do
       dim = length (head points)
   when (dim < 2) $
     error "dimension must be at least 2"
-  unless (all (== dim) (map length (tail points))) $
+  unless (all ((== dim) . length) (tail points)) $
     error "the points must have the same dimension"
   when (n <= dim) $
     error "insufficient number of points"
@@ -153,9 +163,9 @@ facetToPolygon facet = (polygon, dotProduct > 0)
     connectedVertices (i,_) (j,_) = Pair i j `H.member` _edges facet
   polygon = flattenSCCs (stronglyConnComp x)
   vertices = map snd polygon
-  v1 = vertices!!0
-  v2 = vertices!!1
-  v3 = vertices!!2
+  v1 = vertices !! 0
+  v2 = vertices !! 1
+  v3 = vertices !! 2
   normal = crossProd (zipWith subtract v1 v2) (zipWith subtract v1 v3)
     where
     crossProd u v = [ u!!1 * v!!2 - u!!2 * v!!1
