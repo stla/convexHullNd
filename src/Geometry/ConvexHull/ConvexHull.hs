@@ -3,8 +3,20 @@ module Geometry.ConvexHull.ConvexHull
 import           Control.Monad                   ( unless, when )
 import           Geometry.ConvexHull.CConvexHull ( c_convexhull, cConvexHullToConvexHull )
 import           Geometry.ConvexHull.Types       ( Ridge
-                                                 , Facet(_fvertices, _fridges, _fedges)
-                                                 , ConvexHull(_hfacets, _hridges) )
+                                                 , Facet(
+                                                     _fvertices
+                                                   , _fridges
+                                                   , _fedges
+                                                   , _normal'
+                                                   , _centroid
+                                                   , _area
+                                                   )
+                                                 , ConvexHull(
+                                                     _hfacets
+                                                   , _hridges
+                                                   , _dimension
+                                                   ) 
+                                                 )
 import           Data.Function                   ( on )
 import           Data.Graph                      ( flattenSCCs, stronglyConnComp )
 import qualified Data.HashMap.Strict.InsOrd      as H
@@ -99,6 +111,16 @@ hullSummary hull =
     counts_vertices = count_ (map nVertices facets')
     counts_edges = count_ (map nEdges facets')
     counts_ridges = count_ (map (IS.size . _fridges) facets')
+
+-- | Volume of the convex hull (area in dimension 2, volume in dimension 3, 
+-- hypervolume in higher dimension)
+hullVolume :: ConvexHull -> Double
+hullVolume hull = sum (map fvolume facets) / fromIntegral (_dimension hull)
+  where
+    fvolume :: Facet -> Double
+    fvolume fct = 
+      sum (zipWith (*) (_centroid fct) (_normal' fct)) * _area fct
+    facets = IM.elems (_hfacets hull)
 
 -- | facets ids an edge belongs to
 edgeOf :: ConvexHull -> (Index, Index) -> [Int]
