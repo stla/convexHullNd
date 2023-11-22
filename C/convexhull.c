@@ -678,6 +678,7 @@ ConvexHullT* convexHull(
     out->nridges   = n_allridges;
     out->edges     = alledges;
     out->nedges    = nalledges;
+    out->triangle  = triangulate;
 
   } // end if exitcode
 

@@ -76,10 +76,12 @@ instance HasFamily Facet where
   _family = _family'
 
 data ConvexHull = ConvexHull {
-    _hvertices :: IndexMap Vertex
-  , _hfacets   :: IntMap Facet
-  , _hridges   :: IntMap Ridge
-  , _hedges    :: EdgeMap
+    _hvertices  :: IndexMap Vertex
+  , _hfacets    :: IntMap Facet
+  , _hridges    :: IntMap Ridge
+  , _hedges     :: EdgeMap
+  , _simplicial :: Bool
+  , _dimension  :: Int
 } deriving Show
 
 instance HasEdges ConvexHull where

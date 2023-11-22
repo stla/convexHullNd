@@ -57,4 +57,5 @@ typedef struct ConvexHull {
   unsigned     nridges;
   unsigned**   edges;
   unsigned     nedges;
+  unsigned     triangle;
 } ConvexHullT;

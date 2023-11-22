@@ -5,18 +5,30 @@ module Geometry.ConvexHull.CConvexHull
   , c_convexhull 
   )
   where
-import           Control.Monad       ((<$!>), (=<<))
-import           Geometry.ConvexHull.Types
-import           Data.IntMap.Strict  (IntMap, fromAscList)
-import qualified Data.IntMap.Strict  as IM
-import qualified Data.IntSet         as IS
-import           Data.List
+import           Control.Monad             ( (<$!>) )
+import           Geometry.ConvexHull.Types ( ConvexHull(..)
+                                           , Facet(..)
+                                           , Ridge(..)
+                                           , Vertex(..) )
+import           Data.IntMap.Strict        ( IntMap, fromAscList )
+import qualified Data.IntMap.Strict         as IM
+import qualified Data.IntSet                as IS
+import           Data.List                 ( zip4 )
 import qualified Data.HashMap.Strict.InsOrd as H
-import           Data.Tuple.Extra    (both)
-import           Foreign
-import           Foreign.C.Types
-import           Foreign.C.String
-import           Geometry.Qhull.Types
+import           Data.Tuple.Extra          ( both )
+import           Foreign                   ( Ptr
+                                           , Storable(
+                                               pokeByteOff
+                                             , poke
+                                             , peek
+                                             , alignment
+                                             , sizeOf
+                                             , peekByteOff
+                                             )
+                                           , peekArray )
+import           Foreign.C.Types           ( CInt, CDouble, CUInt(..) )
+import           Foreign.C.String          ( CString )
+import           Geometry.Qhull.Types      ( Family(Family, None), IndexPair(Pair) )
 
 #include "convexhull.h"
 
@@ -294,6 +306,7 @@ data CConvexHull = CConvexHull {
   , __nridges :: CUInt
   , __alledges :: Ptr (Ptr CUInt)
   , __nalledges :: CUInt
+  , __triangle :: CUInt
 }
 
 instance Storable CConvexHull where
@@ -309,6 +322,7 @@ instance Storable CConvexHull where
       nridges'     <- #{peek ConvexHullT, nridges} ptr
       alledges'    <- #{peek ConvexHullT, edges} ptr
       nedges'      <- #{peek ConvexHullT, nedges} ptr
+      triangle'    <- #{peek ConvexHullT, triangle} ptr
       return CConvexHull { __dim         = dim'
                          , __allvertices = vertices'
                          , __nvertices   = nvertices'
@@ -318,8 +332,9 @@ instance Storable CConvexHull where
                          , __nridges     = nridges'
                          , __alledges    = alledges'
                          , __nalledges   = nedges'
+                         , __triangle    = triangle'
                      }
-    poke ptr (CConvexHull r1 r2 r3 r4 r5 r6 r7 r8 r9)
+    poke ptr (CConvexHull r1 r2 r3 r4 r5 r6 r7 r8 r9 r10)
       = do
           #{poke ConvexHullT, dim} ptr r1
           #{poke ConvexHullT, vertices} ptr r2
@@ -330,6 +345,7 @@ instance Storable CConvexHull where
           #{poke ConvexHullT, nridges} ptr r7
           #{poke ConvexHullT, edges} ptr r8
           #{poke ConvexHullT, nedges} ptr r9
+          #{poke ConvexHullT, triangle} ptr r10
 
 foreign import ccall unsafe "convexHull" c_convexhull
   :: Ptr CDouble -- points
@@ -348,6 +364,7 @@ cConvexHullToConvexHull cconvexhull = do
       nfaces    = fromIntegral (__nfaces cconvexhull)
       nridges   = fromIntegral (__nridges cconvexhull)
       nedges    = fromIntegral (__nalledges cconvexhull)
+      triangle  = fromIntegral (__triangle cconvexhull)
   vertices <- (=<<) (cVerticesToVertexMap dim)
                     (peekArray nvertices (__allvertices cconvexhull))
   faces <- (=<<) (mapM (cFaceToFacet dim))
@@ -362,8 +379,10 @@ cConvexHullToConvexHull cconvexhull = do
                   (zip (map (\(i,j) -> Pair i j) alledges')
                        (map (both ((IM.!) points)) alledges'))
   return ConvexHull {
-                        _hvertices = vertices
-                      , _hfacets   = fromAscList (zip [0 .. nfaces-1] faces)
-                      , _hridges   = fromAscList allridges
-                      , _hedges    = alledges
+                        _hvertices  = vertices
+                      , _hfacets    = fromAscList (zip [0 .. nfaces-1] faces)
+                      , _hridges    = fromAscList allridges
+                      , _hedges     = alledges
+                      , _simplicial = triangle == 1
+                      , _dimension  = dim
                     }
