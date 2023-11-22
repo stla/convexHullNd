@@ -45,11 +45,11 @@ import           Geometry.Qhull.Types            ( IndexPair(Pair)
                                                  , Family(None)
                                                  , EdgeMap )
 import           Text.Printf                     ( printf )
-import           Text.Regex
+import           Text.Regex                      ( mkRegex, subRegex )
 
 convexHull :: [[Double]]     -- ^ vertices
            -> Bool           -- ^ whether to triangulate
-           -> Bool           -- ^ print output to stdout
+           -> Bool           -- ^ whether to print output to stdout
            -> Maybe FilePath -- ^ write summary to a file
            -> IO ConvexHull
 convexHull points triangulate stdout file = do
@@ -233,13 +233,18 @@ hullToSTL chull filename = do
     print "* are you sure this convex hull is triangulated?\n"
   let facets = IM.elems (_hfacets chull)
       normals = map _normal facets
-      facetNormals = map (\n -> "facet normal  " ++ stringify " " n ++ "\nouter loop\n")
-                     normals
-      polygons = map (\f -> "vertex  " ++
-                        (stringify "\nvertex  " . map snd . facetToPolygon') f) facets
+      facetNormals = 
+        map (\n -> "facet normal  " ++ stringify " " n ++ "\nouter loop\n")
+            normals
+      polygons = 
+        map (\f -> "vertex  " ++
+              (stringify "\nvertex  " . map snd . facetToPolygon') f) facets
       vertices = map (++ "\nendloop\nendfacet\n") polygons
-      vertices' = map (\v -> subRegex (mkRegex "\\]") (subRegex (mkRegex "\\[") v "") "") vertices
-      out = subRegex (mkRegex ",") (concat [x ++ y | x <- facetNormals, y <- vertices']) " "
+      vertices' = 
+        map (\v -> subRegex (mkRegex "\\]") (subRegex (mkRegex "\\[") v "") "") 
+            vertices
+      out = subRegex 
+        (mkRegex ",") (concat [x ++ y | x <- facetNormals, y <- vertices']) " "
   writeFile filename ("solid " ++ filename ++ " produced by QHULL\n" ++ out)
   where
     stringify :: Show a => String -> [a] -> String
