@@ -245,7 +245,7 @@ hullToSTL chull filename = do
             vertices
       out = subRegex 
         (mkRegex ",") (concat [x ++ y | x <- facetNormals, y <- vertices']) " "
-  writeFile filename ("solid " ++ filename ++ " produced by QHULL\n" ++ out)
+  writeFile filename ("solid " ++ filename ++ " produced by Haskell\n" ++ out)
   where
     stringify :: Show a => String -> [a] -> String
     stringify sep = intercalate sep . map show

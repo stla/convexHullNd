@@ -102,7 +102,7 @@ ConvexHull
 This is a big object. The function `hullSummary` returns a summary of it.
 
 The `hullVolume` function returns the volume of the convex hull in any 
-dimension (area in dimension 2, volume in dimension 3, hypervoluùe in higher 
+dimension (area in dimension 2, volume in dimension 3, hypervolume in higher 
 dimension). 
 
 Another useful function is `hullToSTL` for dimension 3. It writes a STL file 
