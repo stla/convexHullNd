@@ -23,7 +23,7 @@ import qualified Data.HashMap.Strict.InsOrd      as H
 import           Data.IntMap.Strict              ( IntMap )
 import qualified Data.IntMap.Strict              as IM
 import qualified Data.IntSet                     as IS
-import           Data.List                       ( nubBy, findIndices, groupBy, partition )
+import           Data.List                       ( nubBy, findIndices, groupBy, partition, intercalate )
 import           Data.List.Index                 ( imap )
 import           Data.List.Unique                ( allUnique, count_ )
 import           Data.Tuple.Extra                ( both )
@@ -43,7 +43,7 @@ import           Geometry.Qhull.Types            ( IndexPair(Pair)
                                                  , Family(None)
                                                  , EdgeMap )
 import           Text.Printf                     ( printf )
--- import           Text.Regex
+import           Text.Regex
 
 convexHull :: [[Double]]     -- ^ vertices
            -> Bool           -- ^ whether to triangulate
@@ -112,7 +112,7 @@ hullSummary hull =
     counts_edges = count_ (map nEdges facets')
     counts_ridges = count_ (map (IS.size . _fridges) facets')
 
--- | Volume of the convex hull (area in dimension 2, volume in dimension 3, 
+-- | volume of the convex hull (area in dimension 2, volume in dimension 3, 
 -- hypervolume in higher dimension)
 hullVolume :: ConvexHull -> Double
 hullVolume hull = sum (map fvolume facets) / fromIntegral (_dimension hull)
@@ -173,7 +173,7 @@ groupedFacets' hull =
 -- toVertex3 :: [Double] -> Vertex3
 -- toVertex3 xs = Vertex3 (xs!!0) (xs!!1) (xs!!2)
 
--- | for 3D only, orders the vertices of the facet (i.e. provides a polygon) ;
+-- | for 3D only, orders the vertices of the facet (i.e. provides a polygon);
 -- also returns a Boolean indicating the orientation of the vertices
 facetToPolygon :: Facet -> ([(Index, [Double])], Bool)
 facetToPolygon facet = (polygon, dotProduct > 0)
@@ -221,19 +221,19 @@ ridgeToPolygon ridge = flattenSCCs (stronglyConnComp x)
     connectedVertices :: (Index, [Double]) -> (Index, [Double]) -> Bool
     connectedVertices (i,_) (j,_) = Pair i j `H.member` _edges ridge
 
--- -- | for 3D only, convert the convex hull to STL format
--- hullToSTL :: ConvexHull -> FilePath -> IO ()
--- hullToSTL chull filename = do
---   let facets = IM.elems (_hfacets chull)
---       normals = map _normal facets
---       facetNormals = map (\n -> "facet normal  " ++ stringify " " n ++ "\nouter loop\n")
---                      normals
---       polygons = map (\f -> "vertex  " ++
---                         (stringify "\nvertex  " . map snd . facetToPolygon') f) facets
---       vertices = map (++ "\nendloop\nendfacet\n") polygons
---       vertices' = map (\v -> subRegex (mkRegex "\\]") (subRegex (mkRegex "\\[") v "") "") vertices
---       out = subRegex (mkRegex ",") (concat [x ++ y | x <- facetNormals, y <- vertices']) " "
---   writeFile filename ("solid " ++ filename ++ " produced by QHULL\n" ++ out)
---   where
---     stringify :: Show a => String -> [a] -> String
---     stringify sep = intercalate sep . map show
+-- | for 3D only, convert the convex hull to STL format
+hullToSTL :: ConvexHull -> FilePath -> IO ()
+hullToSTL chull filename = do
+  let facets = IM.elems (_hfacets chull)
+      normals = map _normal facets
+      facetNormals = map (\n -> "facet normal  " ++ stringify " " n ++ "\nouter loop\n")
+                     normals
+      polygons = map (\f -> "vertex  " ++
+                        (stringify "\nvertex  " . map snd . facetToPolygon') f) facets
+      vertices = map (++ "\nendloop\nendfacet\n") polygons
+      vertices' = map (\v -> subRegex (mkRegex "\\]") (subRegex (mkRegex "\\[") v "") "") vertices
+      out = subRegex (mkRegex ",") (concat [x ++ y | x <- facetNormals, y <- vertices']) " "
+  writeFile filename ("solid " ++ filename ++ " produced by QHULL\n" ++ out)
+  where
+    stringify :: Show a => String -> [a] -> String
+    stringify sep = intercalate sep . map show

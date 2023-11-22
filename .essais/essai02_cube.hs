@@ -14,4 +14,4 @@ cube = [
        ]
 
 hull :: IO ConvexHull
-hull = convexHull cube False True (Just "essai02.txt")
+hull = convexHull cube True True Nothing
