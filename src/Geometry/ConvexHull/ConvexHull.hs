@@ -1,3 +1,4 @@
+{- HLINT ignore "Use head" -}
 module Geometry.ConvexHull.ConvexHull
   where
 import           Control.Monad                   ( unless, when )
@@ -15,6 +16,7 @@ import           Geometry.ConvexHull.Types       ( Ridge
                                                      _hfacets
                                                    , _hridges
                                                    , _dimension
+                                                   , _simplicial
                                                    ) 
                                                  )
 import           Data.Function                   ( on )
@@ -221,9 +223,14 @@ ridgeToPolygon ridge = flattenSCCs (stronglyConnComp x)
     connectedVertices :: (Index, [Double]) -> (Index, [Double]) -> Bool
     connectedVertices (i,_) (j,_) = Pair i j `H.member` _edges ridge
 
--- | for 3D only, convert the convex hull to STL format
+-- | for 3D only, convert the convex hull to a STL file;
+-- the STL format is valid for triangle meshes only
 hullToSTL :: ConvexHull -> FilePath -> IO ()
 hullToSTL chull filename = do
+  when (_dimension chull /= 3) $
+    error "dimension is not 3"
+  unless (_simplicial chull) $
+    print "* are you sure this convex hull is triangulated?\n"
   let facets = IM.elems (_hfacets chull)
       normals = map _normal facets
       facetNormals = map (\n -> "facet normal  " ++ stringify " " n ++ "\nouter loop\n")

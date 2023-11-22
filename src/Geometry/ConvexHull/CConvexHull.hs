@@ -1,3 +1,5 @@
+{- HLINT ignore "Avoid lambda using `infix`" -}
+{- HLINT ignore "Use head" -}
 -- {-# LINE 1 "convexhull.hsc" #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 module Geometry.ConvexHull.CConvexHull
